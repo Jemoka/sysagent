@@ -5,8 +5,26 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "beautifulsoup4>=4.13.4",
     "httpx>=0.28.1",
     "mcp[cli]>=1.27.0",
+    "openpyxl>=3.1.5",
     "pdfplumber>=0.11.9",
+    "python-docx>=1.1.2",
+    "python-pptx>=1.0.2",
+    "pyyaml>=6.0.2",
+    "nltk>=3.9",
     "xapian-bindings>=0.1.0",
+    "numpy>=2.4.4",
 ]
+
+[project.scripts]
+sysagent = "sysagent.main:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
