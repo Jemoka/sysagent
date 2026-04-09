@@ -2,6 +2,8 @@ import binascii
 import json
 from pathlib import Path
 
+import re
+
 import nltk
 from nltk.tokenize import TextTilingTokenizer
 from tqdm import tqdm
@@ -13,9 +15,26 @@ from sysagent.extractors import (
     _extract_pdf_page, _pdf_page_count,
 )
 
+_RESOURCE_RE = re.compile(r"Resource (.+) not found")
 
-nltk.download("punkt_tab", quiet=True)
-_tiler = TextTilingTokenizer()
+
+def _ensure_nltk():
+    """Try to build the tiler, auto-downloading any missing NLTK resources."""
+    remaining = 5
+    while remaining > 0:
+        try:
+            return TextTilingTokenizer()
+        except LookupError as exc:
+            m = _RESOURCE_RE.search(str(exc))
+            if not m:
+                raise
+            resource = m.group(1).strip().rstrip(".")
+            nltk.download(resource, quiet=True)
+            remaining -= 1
+    raise RuntimeError("Failed to resolve NLTK resources after multiple attempts")
+
+
+_tiler = _ensure_nltk()
 
 
 def _chunk_text(text):
