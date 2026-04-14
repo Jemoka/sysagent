@@ -12,16 +12,35 @@ def _get_db(ctx: Context) -> DB:
 
 
 def make_mcp(db_path: Path) -> FastMCP:
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+
+    db = DB(db_path)
+    titles = db.list_titles()
+    db.close()
+
+    if titles:
+        listing = "\n".join(f"- {t}" for t in titles)
+        instructions = (
+            f"Provides full-text search over the following indexed documents:\n"
+            f"{listing}\n"
+            f"Use search() to find relevant content."
+        )
+    else:
+        instructions = (
+            "Provides full-text search over indexed documents. "
+            "No documents are currently indexed. Use index_file() or "
+            "index_directory() to add documents first."
+        )
+
     @asynccontextmanager
     async def lifespan(app: FastMCP):
-        db_path.parent.mkdir(parents=True, exist_ok=True)
         db = DB(db_path)
         try:
             yield db
         finally:
             db.close()
 
-    mcp = FastMCP("sysagent-search", lifespan=lifespan)
+    mcp = FastMCP("DocumentSearch", instructions=instructions, lifespan=lifespan)
 
     @mcp.tool()
     async def search(query: str, limit: int = 16, ctx: Context = None) -> list[dict]:

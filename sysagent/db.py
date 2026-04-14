@@ -13,8 +13,8 @@ from sysagent.extractors import (
     _extract_pdf_page, _pdf_page_count,
 )
 
-
 nltk.download("punkt_tab", quiet=True)
+nltk.download("stopwords", quiet=True)
 _tiler = TextTilingTokenizer()
 
 
@@ -185,4 +185,15 @@ class DB:
             results.append(data)
 
         return results
+
+    def list_titles(self):
+        titles = set()
+        for docid in range(1, self.db.get_lastdocid() + 1):
+            try:
+                doc = self.db.get_document(docid)
+                data = json.loads(doc.get_data())
+                titles.add(data["title"])
+            except xapian.DocNotFoundError:
+                continue
+        return sorted(titles)
 
