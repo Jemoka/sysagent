@@ -186,3 +186,14 @@ class DB:
 
         return results
 
+    def list_titles(self):
+        titles = set()
+        for docid in range(1, self.db.get_lastdocid() + 1):
+            try:
+                doc = self.db.get_document(docid)
+                data = json.loads(doc.get_data())
+                titles.add(data["title"])
+            except xapian.DocNotFoundError:
+                continue
+        return sorted(titles)
+
